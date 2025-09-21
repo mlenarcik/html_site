@@ -1,12 +1,211 @@
-<h1>New Site with Pages</h1>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>100 Years in Weeks — 1980–2080 (weeks start Monday)</title>
+  <style>
+    :root{
+      --bg: #ffffff;
+      --dot: #e5e7eb;
+      --light-grey: #d3d3d3;
+      --navy: #001f3f;
+      --green: #008000;
+      --light-green: #90ee90;
+      --border: #e5e7eb;
+      --text: #111827;
+      --muted: #6b7280;
+    }
+    html, body { background: var(--bg); margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--text);}    
+    header{padding: 0.75rem 0.5rem; text-align:center;}
+    h1{margin:0; font-size: 1.05rem; font-weight: 700; line-height:1.3;}
+    .wrap{padding: 0.25rem; display:flex; justify-content:center;}
 
-<p>This is a basic site created with github pages.</p>
+    /* 10x10 arrangement of years */
+    .years{
+      display: grid; 
+      grid-template-columns: repeat(10, min-content);
+      grid-auto-rows: auto;
+      gap: 4px; 
+    }
 
-<p>About:</p>
+    .year{
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
 
-<p>My name is Marcin and I live in Reading, UK. Since February 2025 I have studied data analytics at Imperial College London.</p>
-<p>My work background is in retail and supply chain but I am transitioning to project management from October 2025.</p>
-<p>My recent project is looking at sewer spills in the UK.</p>
-<p>My professional goal is to build a business which supports healthy living.</p>
+    .year-head{
+      margin-bottom:1px;
+      font-size: .45rem; color: var(--muted); text-align:center;
+    }
 
-<img src="image_1.JPG" alt="Healthy lifestyle logo in shape of a heart." width="400">
+    /* layout per year: 4 x 13 weeks */
+    .weeks{ display:grid; grid-template-columns: repeat(13, 1fr); grid-auto-rows: 6px; gap: 1px;}
+
+    .dot{ width: 4px; height: 4px; border-radius: 9999px; background: var(--dot); margin:auto;}
+    .dot.empty{ visibility: hidden; }
+
+    .c-light-grey{ background: var(--light-grey); }
+    .c-navy{ background: var(--navy); }
+    .c-green{ background: var(--green); }
+    .c-light-green{ background: var(--light-green); }
+
+    .legend{ display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; padding: 0.5rem 0.25rem; font-size:.6rem}
+    .legend-item{ display:flex; align-items:center; gap:3px; color: var(--muted); }
+    .legend .sw{ width: 6px; height: 6px; border-radius: 9999px; }
+
+    .below{ text-align:center; color: var(--muted); font-size: .6rem; padding: .5rem .5rem 0;}
+    .hint{ font-size: .6rem; color: var(--muted); text-align:center; padding: .25rem 0 .5rem;}
+
+    /* (Optionally) style for config anchors if shown */
+    .visually-hidden{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+    .title-link{ color: inherit; text-decoration: underline; text-decoration-color: #d1d5db; }
+  </style>
+</head>
+<body>
+  <!-- ===== Editable date config (anchor targets for easy linking) ===== -->
+  <div id="dates-config" class="visually-hidden" aria-hidden="true">
+    <p id="cfg-start-week">Label: FIRST WEEK (week grid begins); Value: 9 Jun 1980 (START_WEEK_1980_06_09)</p>
+    <p id="cfg-grey-cutoff">Label: LIGHT GREY up to and including; Value: 30 Aug 2004 (GREY_CUTOFF_2004_08_30)</p>
+    <p id="cfg-navy-start">Label: NAVY from (inclusive) until current week starts; Value: 6 Sep 2004 (NAVY_START_2004_09_06)</p>
+    <p id="cfg-green-until">Label: GREEN from current week through (inclusive); Value: 9 Jun 2050 (GREEN_UNTIL_2050_06_09)</p>
+    <p id="cfg-last-year">Label: FINAL CALENDAR YEAR shown; Value: 2080 (LAST_YEAR_2080)</p>
+  </div>
+
+  <header>
+    <h1 id="title">You have … weeks left. What will you achieve in this time?</h1>
+  </header>
+
+  <div class="legend" aria-label="Legend">
+    <div class="legend-item"><span class="sw" style="background:#d3d3d3"></span> up to week commencing 30 Aug 2004</div>
+    <div class="legend-item"><span class="sw" style="background:#001f3f"></span> 6 Sep 2004 → before current week</div>
+    <div class="legend-item"><span class="sw" style="background:#008000"></span> current week → 9 Jun 2050</div>
+    <div class="legend-item"><span class="sw" style="background:#90ee90"></span> after 9 Jun 2050</div>
+  </div>
+
+  <div class="wrap">
+    <div id="grid" class="years" role="grid" aria-label="Years in weeks"></div>
+  </div>
+
+  <p class="below">Weeks start on Monday. First week begins 9 June 1980. Each year is 4×13 dots (52 weeks). Years are arranged in a 10×10 grid. If a year has 53 Mondays, the earliest week is omitted. In 1980, weeks before 9 June are hidden but the grid remains.</p>
+  <p class="hint">Hover any dot to see its week commencing date.</p>
+
+  <script>
+  (function(){
+    // ===== ALL KEY DATES & LABELS (adjust here) =====
+    // Display and logic dates (local time). Update these constants to adjust behaviour.
+    const CONFIG = {
+      FIRST_YEAR: 1980,
+      LAST_YEAR:  2080,
+      START_WEEK_1980_06_09: new Date(1980, 5, 9),   // 9 Jun 1980 — first visible week (Monday)
+      GREY_CUTOFF_2004_08_30: new Date(2004, 7, 30), // 30 Aug 2004 — light grey through this week (inclusive)
+      NAVY_START_2004_09_06:  new Date(2004, 8, 6),  // 6 Sep 2004 — navy from this week up to (but not incl.) current week
+      GREEN_UNTIL_2050_06_09: new Date(2050, 5, 9),  // 9 Jun 2050 — current week through this week are green (inclusive)
+      LAST_DAY_2080_12_31:    new Date(2080,11,31)   // Last day considered for 2080
+    };
+
+    // ===== Helpers for Monday-based weeks in local time (Europe/London assumed by browser) =====
+    function atMidnightLocal(d){ const x=new Date(d); x.setHours(0,0,0,0); return x; }
+    function addDays(d, n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
+    function addWeeks(d, n){ return addDays(d, n*7); }
+    function startOfMondayWeek(d){
+      const x = atMidnightLocal(d);
+      const dow = x.getDay(); // 0=Sun..6=Sat
+      const offset = (dow===0? -6 : 1 - dow); // move to Monday
+      return addDays(x, offset);
+    }
+    function fmt(d){ return d.toLocaleDateString(undefined, {year:'numeric', month:'short', day:'numeric'}); }
+
+    const START_DATE = atMidnightLocal(CONFIG.START_WEEK_1980_06_09);
+    const FIRST_YEAR = CONFIG.FIRST_YEAR;
+    const LAST_YEAR  = CONFIG.LAST_YEAR;
+
+    const GREY_CUTOFF = atMidnightLocal(CONFIG.GREY_CUTOFF_2004_08_30);
+    const NAVY_START  = atMidnightLocal(CONFIG.NAVY_START_2004_09_06);
+    const GREEN_UNTIL = atMidnightLocal(CONFIG.GREEN_UNTIL_2050_06_09);
+
+    const today = new Date();
+    const CURRENT_WEEK = startOfMondayWeek(today);
+
+    // ===== Title logic: weeks left from CURRENT_WEEK through GREEN_UNTIL (inclusive) =====
+    const MS_PER_WEEK = 7 * 24 * 60 * 60 * 1000;
+    let weeksLeft = 0;
+    if (CURRENT_WEEK <= GREEN_UNTIL){
+      weeksLeft = Math.floor((GREEN_UNTIL - CURRENT_WEEK) / MS_PER_WEEK) + 1; // inclusive of both ends
+      if (weeksLeft < 0) weeksLeft = 0;
+    }
+    const title = document.getElementById('title');
+    const targetLink = `<a class="title-link" href="#cfg-green-until" title="Jump to date config">${fmt(GREEN_UNTIL)}</a>`;
+    title.innerHTML = `You have ${weeksLeft.toLocaleString()} weeks left. What will you achieve in this time?`;
+    // Append second line with linked target date
+    const small = document.createElement('div');
+    small.style.fontSize = '.75rem';
+    small.style.color = 'var(--muted)';
+    small.innerHTML = `Counting from the current week through ${targetLink}.`;
+    title.appendChild(small);
+
+    // ===== Year/week generation =====
+    function weeksForYear(year){
+      const firstOfYear = atMidnightLocal(new Date(year, 0, 1));
+      const lastOfYear  = atMidnightLocal(new Date(year, 11, 31));
+      let firstMon = startOfMondayWeek(firstOfYear);
+      if (firstMon < firstOfYear) firstMon = addWeeks(firstMon, 1);
+      const arr = [];
+      for (let d = new Date(firstMon); d <= lastOfYear; d = addWeeks(d,1)){
+        arr.push(new Date(d));
+      }
+      // If 53 Mondays occur, drop the earliest so the last week of the year remains visible
+      while (arr.length > 52) arr.shift();
+
+      if (year === FIRST_YEAR){
+        const visible = arr.filter(d => d >= START_DATE);
+        const hiddenCount = 52 - visible.length; // placeholders to keep 4x13 shape
+        return { weeks: visible, hiddenLeading: hiddenCount };
+      }
+      return { weeks: arr, hiddenLeading: 0 };
+    }
+
+    function colorFor(weekStart){
+      let cls = 'c-light-green';
+      if (weekStart <= GREY_CUTOFF){ cls = 'c-light-grey'; }
+      if (weekStart >= NAVY_START && weekStart < CURRENT_WEEK){ cls = 'c-navy'; }
+      if (weekStart >= CURRENT_WEEK && weekStart <= GREEN_UNTIL){ cls = 'c-green'; }
+      return cls;
+    }
+
+    const grid = document.getElementById('grid');
+
+    for (let row = 0; row < 10; row++){
+      for (let col = 0; col < 10; col++){
+        const year = FIRST_YEAR + row*10 + col;
+        if (year > LAST_YEAR) continue;
+        const yc = document.createElement('div'); yc.className = 'year';
+        const head = document.createElement('div'); head.className = 'year-head';
+        head.innerHTML = `<span>${year}</span>`;
+        yc.appendChild(head);
+
+        const weeksEl = document.createElement('div'); weeksEl.className = 'weeks';
+        const { weeks, hiddenLeading } = weeksForYear(year);
+
+        for (let i=0; i<hiddenLeading; i++){
+          const ph = document.createElement('div'); ph.className = 'dot empty'; ph.setAttribute('aria-hidden','true'); weeksEl.appendChild(ph);
+        }
+        for (const ws of weeks){
+          const d = document.createElement('div');
+          d.className = `dot ${colorFor(ws)}`;
+          d.title = `Week commencing ${fmt(ws)}`;
+          weeksEl.appendChild(d);
+        }
+        yc.appendChild(weeksEl);
+        grid.appendChild(yc);
+      }
+    }
+  })();
+  </script>
+
+</body>
+</html>
+
