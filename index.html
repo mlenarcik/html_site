@@ -17,35 +17,38 @@
       --muted: #6b7280;
     }
     html, body { background: var(--bg); margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; color: var(--text);}    
-    header{padding: 0.75rem 0.5rem; text-align:center;}
-    h1{margin:0; font-size: 1.05rem; font-weight: 700; line-height:1.3;}
-    .wrap{padding: 0.25rem; display:flex; justify-content:center;}
+    header{padding: 1rem 0.5rem; text-align:center;}
+    h1{margin:0; font-size: 1.44rem; font-weight: 700; line-height:1.3;} /* 15% larger */
+    .wrap{padding: 0.35rem; display:flex; justify-content:center;}
 
     /* 10x10 arrangement of years */
     .years{
       display: grid; 
       grid-template-columns: repeat(10, min-content);
       grid-auto-rows: auto;
-      gap: 4px; 
+      gap: 5px; 
     }
 
     .year{
       border: 1px solid var(--border);
-      border-radius: 3px;
-      padding: 1px;
+      border-radius: 4px;
+      padding: 2px;
       display: grid;
       grid-template-rows: auto 1fr;
     }
 
     .year-head{
-      margin-bottom:1px;
-      font-size: .45rem; color: var(--muted); text-align:center;
+      margin-bottom:2px;
+      font-size: .63rem; /* 15% larger */
+      color: var(--muted);
+      text-align:center;
+      font-weight: 700; /* bold year numbers */
     }
 
     /* layout per year: 4 x 13 weeks */
-    .weeks{ display:grid; grid-template-columns: repeat(13, 1fr); grid-auto-rows: 6px; gap: 1px;}
+    .weeks{ display:grid; grid-template-columns: repeat(13, 1fr); grid-auto-rows: 7px; gap: 1.2px;}
 
-    .dot{ width: 4px; height: 4px; border-radius: 9999px; background: var(--dot); margin:auto;}
+    .dot{ width: 5px; height: 5px; border-radius: 9999px; background: var(--dot); margin:auto;}
     .dot.empty{ visibility: hidden; }
 
     .c-light-grey{ background: var(--light-grey); }
@@ -53,12 +56,12 @@
     .c-green{ background: var(--green); }
     .c-light-green{ background: var(--light-green); }
 
-    .legend{ display:flex; gap:6px; align-items:center; justify-content:center; flex-wrap:wrap; padding: 0.5rem 0.25rem; font-size:.6rem}
-    .legend-item{ display:flex; align-items:center; gap:3px; color: var(--muted); }
-    .legend .sw{ width: 6px; height: 6px; border-radius: 9999px; }
+    .legend{ display:flex; gap:7px; align-items:center; justify-content:center; flex-wrap:wrap; padding: 0.6rem 0.25rem; font-size:.72rem}
+    .legend-item{ display:flex; align-items:center; gap:4px; color: var(--muted); }
+    .legend .sw{ width: 7px; height: 7px; border-radius: 9999px; }
 
-    .below{ text-align:center; color: var(--muted); font-size: .6rem; padding: .5rem .5rem 0;}
-    .hint{ font-size: .6rem; color: var(--muted); text-align:center; padding: .25rem 0 .5rem;}
+    .below{ text-align:center; color: var(--muted); font-size: .72rem; padding: .6rem .5rem 0;}
+    .hint{ font-size: .72rem; color: var(--muted); text-align:center; padding: .3rem 0 .6rem;}
 
     /* (Optionally) style for config anchors if shown */
     .visually-hidden{ position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
@@ -79,6 +82,10 @@
     <h1 id="title">You have … weeks left. What will you achieve in this time?</h1>
   </header>
 
+  <div class="wrap">
+    <div id="grid" class="years" role="grid" aria-label="Years in weeks"></div>
+  </div>
+
   <div class="legend" aria-label="Legend">
     <div class="legend-item"><span class="sw" style="background:#d3d3d3"></span> up to week commencing 30 Aug 2004</div>
     <div class="legend-item"><span class="sw" style="background:#001f3f"></span> 6 Sep 2004 → before current week</div>
@@ -86,11 +93,7 @@
     <div class="legend-item"><span class="sw" style="background:#90ee90"></span> after 9 Jun 2050</div>
   </div>
 
-  <div class="wrap">
-    <div id="grid" class="years" role="grid" aria-label="Years in weeks"></div>
-  </div>
-
-  <p class="below">Weeks start on Monday. First week begins 9 June 1980. Each year is 4×13 dots (52 weeks). Years are arranged in a 10×10 grid. If a year has 53 Mondays, the earliest week is omitted. In 1980, weeks before 9 June are hidden but the grid remains.</p>
+  <p class="below">Weeks start on Monday. First week begins 9 June 1980. If a year has 53 Mondays, the last week is omitted.</p>
   <p class="hint">Hover any dot to see its week commencing date.</p>
 
   <script>
@@ -138,11 +141,11 @@
       if (weeksLeft < 0) weeksLeft = 0;
     }
     const title = document.getElementById('title');
-    const targetLink = `<a class="title-link" href="#cfg-green-until" title="Jump to date config">${fmt(GREEN_UNTIL)}</a>`;
+    const targetLink = `<a class=\"title-link\" href=\"#cfg-green-until\" title=\"Jump to date config\">${fmt(GREEN_UNTIL)}</a>`;
     title.innerHTML = `You have ${weeksLeft.toLocaleString()} weeks left. What will you achieve in this time?`;
     // Append second line with linked target date
     const small = document.createElement('div');
-    small.style.fontSize = '.75rem';
+    small.style.fontSize = '1.04rem'; /* 15% larger than previous .9rem */
     small.style.color = 'var(--muted)';
     small.innerHTML = `Counting from the current week through ${targetLink}.`;
     title.appendChild(small);
@@ -157,8 +160,8 @@
       for (let d = new Date(firstMon); d <= lastOfYear; d = addWeeks(d,1)){
         arr.push(new Date(d));
       }
-      // If 53 Mondays occur, drop the earliest so the last week of the year remains visible
-      while (arr.length > 52) arr.shift();
+      // If 53 Mondays occur, drop the last so only 52 weeks remain
+      while (arr.length > 52) arr.pop();
 
       if (year === FIRST_YEAR){
         const visible = arr.filter(d => d >= START_DATE);
@@ -208,4 +211,3 @@
 
 </body>
 </html>
-
